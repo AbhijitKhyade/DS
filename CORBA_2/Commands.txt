@@ -1,0 +1,16 @@
+# CORBA Application Execution Commands
+
+# 1. Compile the IDL file to generate client and server stubs
+idlj -fall ReverseModule.idl
+
+# 2. Compile all Java files
+javac *.java ReverseModule/*.java
+
+# 3: Start the CORBA Name Service
+start orbd -ORBInitialPort 1050
+
+# 4: Run the Server
+java Server -ORBInitialPort 1050 -ORBInitialHost localhost
+
+# 5. Run the Client
+java Client -ORBInitialPort 1050 -ORBInitialHost localhost

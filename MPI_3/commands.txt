@@ -1,0 +1,5 @@
+Step 1: Compile
+javac -cp "C:\mpj\lib\mpj.jar;." ScatterGather.java
+
+Step 2: Run
+mpjrun.bat -np 4 -cp . ScatterGather 
