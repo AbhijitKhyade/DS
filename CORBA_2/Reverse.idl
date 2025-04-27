@@ -1,0 +1,5 @@
+module ReverseApp {
+  interface Reverse {
+    string reverse_string(in string str);
+  };
+};
