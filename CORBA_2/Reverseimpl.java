@@ -12,6 +12,7 @@ class Reverseimpl extends ReversePOA {
         StringBuffer str = new StringBuffer(name);
         // str = new StringBuffer(str.toString().toUpperCase());  // Convert to uppercase
         str.reverse();   // Reverse the string
+        
         return (("Server send: " + str));
     }
 }

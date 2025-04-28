@@ -6,7 +6,6 @@ import ReverseModule.Reverse;
 
 class Server {
     public static void main(String[] args) {
-
         try {
             org.omg.CORBA.ORB orb = org.omg.CORBA.ORB.init(args, null);
             POA rootPOA = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));

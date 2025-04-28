@@ -1,80 +1,50 @@
 import socket
 import time
-from datetime import datetime
 
-def start_time_daemon():
-    host = '0.0.0.0'  # Listen on all interfaces
+# Lists to store client connections and their reported times
+client_sockets = []
+client_times = []
+
+def start_server():
+    host = '127.0.0.1'
     port = 8080
-    num_clients = 2  # Support multiple clients
 
-    print("Berkeley Algorithm Time Daemon")
-    print("-" * 30)
-
+    # Create and bind server socket
     server_socket = socket.socket()
     server_socket.bind((host, port))
     server_socket.listen(5)
-    print(f"Time daemon started on port {port}. Waiting for {num_clients} client(s)...")
 
-    client_sockets = []
-    client_times = []
-    time_differences = []
+    print("Server started. Waiting for 3 clients to connect...")       
 
-    # Step 1: Accept connections from all clients
-    for i in range(num_clients):
-        try:
-            conn, addr = server_socket.accept()
-            print(f"Client {i+1} connected from {addr}")
-            client_sockets.append(conn)
-        except socket.error as e:
-            print(f"Error accepting connection: {e}")
-            continue
+    # TODO: Change to 1 client when executing in a real environment
+    # Accept 3 clients
+    for i in range(1):
+        conn, addr = server_socket.accept()
+        print(f"Client {i+1} connected from {addr}")
+        client_sockets.append(conn)
 
-    # Step 2: Get daemon's local time
-    daemon_time = time.time()
-    print(f"\nDaemon local time: {datetime.fromtimestamp(daemon_time)}")
+    # Receive each client's local time
+    for conn in client_sockets:
+        client_time = float(conn.recv(1024).decode())
+        client_times.append(client_time)
+        print(f"Received client time: {client_time:.2f}")
 
-    # Step 3: Request and collect time from all clients
-    for i, conn in enumerate(client_sockets):
-        try:
-            # Request client's time
-            conn.send("REQUEST_TIME".encode())
-            client_time = float(conn.recv(1024).decode())
-            client_times.append(client_time)
-            
-            # Calculate time difference (client - daemon)
-            time_diff = client_time - daemon_time
-            time_differences.append(time_diff)
-            
-            print(f"Client {i+1} time: {datetime.fromtimestamp(client_time)} (Diff: {time_diff:.6f} seconds)")
-        except socket.error as e:
-            print(f"Error receiving time: {e}")
-            client_sockets.remove(conn)
+    # Get server's own time (master clock)
+    master_time = time.time()
+    print(f"Server (Master) time: {master_time:.2f}")
+    client_times.append(master_time)
 
-    # Step 4: Include daemon's time in the calculation (with 0 difference)
-    time_differences.append(0)  # Daemon's time difference with itself is 0
-    
-    # Step 5: Calculate the average offset
-    average_offset = sum(time_differences) / len(time_differences)
-    print(f"\nAverage time offset: {average_offset:.6f} seconds")
-    
-    # Step 6: Calculate and send adjustment for each client
-    print("\nSending time adjustments to clients:")
-    for i, conn in enumerate(client_sockets):
-        try:
-            # Calculate adjustment (negative of the difference from average)
-            adjustment = -(time_differences[i] - average_offset)
-            
-            # Send adjustment to client
-            conn.send(str(adjustment).encode())
-            print(f"Client {i+1} adjustment: {adjustment:.6f} seconds")
-        except socket.error as e:
-            print(f"Error sending adjustment: {e}")
+    # Calculate average of all clocks (including server)
+    average_time = sum(client_times) / len(client_times)
+    print(f"Calculated average synchronized time: {average_time:.2f}")
 
-    # Step 7: Close all connections
-    print("\nSynchronization complete. Closing connections.")
+    # Send synchronized time back to each client
+    for conn in client_sockets:
+        conn.send(str(average_time).encode())
+
+    print("Synchronized time sent to all clients. Closing connections.")
     for conn in client_sockets:
         conn.close()
-    server_socket.close()
 
 if __name__ == '__main__':
-    start_time_daemon()
+    start_server()
