@@ -3,4 +3,4 @@ import java.rmi.RemoteException;
 
 public interface RemoteInterface extends Remote {
     int add(int a, int b) throws RemoteException;
-}
+}   
